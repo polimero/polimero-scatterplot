@@ -28,7 +28,8 @@
   ],
   "dependencies": {
     "polymer": "~0.8.0",
-	"polimero-data": "*"
+    "polimero-data": "*",
+    "polimero-plot": "*"
   },
   "devDependencies": {
     "web-component-tester": "*"
