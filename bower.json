@@ -1,0 +1,36 @@
+{
+  "name": "polimero-scatterplot",
+  "version": "0.0.1",
+  "authors": [
+    "Jan Aerts <jan.aerts@gmail.com>"
+  ],
+  "description": "The Polimero scatterplot visual element",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer",
+    "visualization",
+    "polimero",
+    "d3"
+  ],
+  "main": "polimero-scatterplot.html",
+  "license": "MIT",
+  "homepage": "https://github.com/polimero/polimero-scatterplot/",
+  "ignore": [
+    "/.*",
+    "/test/",
+    "/demo/",
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "~0.8.0",
+	"polimero-data": "*"
+  },
+  "devDependencies": {
+    "web-component-tester": "*"
+  }
+}

@@ -1,0 +1,128 @@
+<!--
+@license
+Copyright (c) 2015 Jan Aerts. All rights reserved.
+The complete set of contributors may be found at http://bitbucket.org/vda-lab/polimero/CONTRIBUTORS.txt
+-->
+<link rel="import" href="bower_components/polymer/polymer.html">
+
+<!--
+A scatterplot.
+
+Example:
+
+    <polimero-scatterplot data="{{data}}" selected="{{selected}}" xValues="sepalLength" yValues="petalLength"></polimero-scatterplot>
+
+-->
+<polymer-element name="polimero-scatterplot" extends="polimero-plot" attributes="xValues yValues data options">
+	<template>
+		<shadow></shadow>
+	</template>
+	<script>
+	Polymer('polimero-scatterplot', {
+		// We set some defaults here
+		// Use this in html: <scatter-plot options='{"width": 200, "xaxis": true}'></scatter-plot>
+		// ATTENTION: - the complete options string has to be in SINGLE quotes
+		//            - the keys have to be in DOUBLE quotes
+		ready: function() {
+			this.super()
+			
+			// And we set the dimensions of the svg
+			this.svg = d3.select(this.$.svg).attr({width: this.width, height: this.height})
+		},
+		
+		drawAxes: function() {
+			var me = this;
+			if ( this.xAxis ) {
+				var xAxis = d3.svg.axis().scale(me.xScale)
+				me.svg.append('g')
+					.attr("class", "x axis")
+					.attr("transform", "translate(0," + (me.height - me.yPadding) + ")")
+					.call(xAxis)
+			}
+			if ( this.yAxis ) {
+				var yAxis = d3.svg.axis().scale(me.yScale).orient("left")
+				me.svg.append('g')
+					.attr("class", "y axis")
+					.attr("transform", "translate(" + me.xPadding + ",0)")
+					.call(yAxis)
+			}
+		},
+
+		calculateScales: function(data) {
+			var me = this
+			if ( me.yAxis ) {
+				me.xMin = me.xPadding
+			} else {
+				me.xMin = 0
+			}
+			me.xScale = d3.scale.linear()
+										.domain([d3.min(data, function(d) { return d.data.x}), d3.max(data, function(d) { return d.data.x})])
+										.range([me.xMin, this.width])
+			me.barWidth = me.width/data.length
+			if ( me.barWidth > 2 ) { // Add white space between bars if possible
+				me.barWidth = me.barWidth - 1
+			}
+			if ( me.xAxis ) {
+				me.yMax = me.height - me.yPadding
+			} else {
+				me.yMax = me.height
+			}
+			me.yScale = d3.scale.linear()
+										.domain([d3.min(data, function(d) { return d.data.y}), d3.max(data, function(d) { return d.data.y})])
+										.range([me.yMax, 0])
+		},
+		
+		drawData: function(data) {
+			var me = this
+
+			var mark = me.svg.append("g")
+				.attr('class','mark')
+				.selectAll("circle")
+				.data(data)
+				.enter()
+				.append('circle')
+				.attr({
+					cx: function(d) { return me.xScale(d.data.x) },
+					cy: function(d) { return me.yScale(d.data.y) },
+					r: 3,
+					class: 'circle',
+					id: function(d) { return d.id }
+				})
+			me.svg.append("g")
+				.attr("class", "brush")
+				.call(d3.svg.brush()
+					.x(me.xScale)
+					.y(me.yScale)
+					.on("brush", function() {
+						var extent = d3.event.target.extent();
+						mark.classed('brushed', function(d) {
+							return extent[0][0] <= d.data.x && d.data.x <= extent[1][0]
+									&& extent[0][1] <= d.data.y && d.data.y <= extent[1][1]
+						})
+						me.svg.selectAll('.brushed').forEach(function(d) {
+							me.selected = d.map(function(el) { console.log(el.id); return el.id })
+						})
+					}));
+		},
+
+		dataChanged: function() {
+			var me = this
+			
+			// This is the important part: we convert the input data into the exact data we
+			// want to plot. Necessary columns: id, x, and y.
+			// var plotData = []
+			// for ( var i = 0; i < me.data.length; i++ ) {
+			// 	plotData.push({id: me.data[i]['id'], x: me.data[i][me.xValues], y: me.data[i][me.yValues]})
+			// }
+			
+			var plotData = me.data.map(function(d,i) { return {'id': d.id, 'data':{'x': d.data[me.xValues], 'y':d.data[me.yValues]}}})
+			
+			if (plotData.length > 0) {
+                me.calculateScales(plotData)
+                me.drawData(plotData)
+                me.drawAxes(plotData)
+            }
+		}
+	})
+	</script>
+</polymer-element>
